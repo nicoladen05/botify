@@ -1,8 +1,5 @@
-import discord
-from discord.ext import commands
-
-import asyncio
 import os
+import discord
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -12,8 +9,15 @@ TOKEN = os.getenv("BOT_TOKEN")
 intents = discord.Intents.default()
 intents.message_content = True
 
-bot = commands.Bot(command_prefix='.', intents=intents)
+client = discord.Bot(intents=intents)
 
-asyncio.run(bot.load_extension("commands.ping"))
+# Commands
+client.load_extension("commands.essentials")
 
-bot.run(TOKEN)
+
+@client.event
+async def on_ready():
+    print(f"Logged in as {client.user} (ID: {client.user.id})")
+
+
+client.run(TOKEN)
