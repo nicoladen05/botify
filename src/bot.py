@@ -1,4 +1,5 @@
 import os
+
 import discord
 from dotenv import load_dotenv
 
@@ -6,18 +7,18 @@ load_dotenv()
 
 TOKEN = os.getenv("BOT_TOKEN")
 
-intents = discord.Intents.default()
-intents.message_content = True
+INTENTS = discord.Intents.default()
 
-client = discord.Bot(intents=intents)
+bot = discord.Bot(intents=INTENTS)
 
 # Commands
-client.load_extension("commands.essentials")
+bot.load_extension("commands.essentials")
+bot.load_extension("commands.music")
 
 
-@client.event
+@bot.event
 async def on_ready():
-    print(f"Logged in as {client.user} (ID: {client.user.id})")
+    print(f"Logged in as {bot.user} (ID: {bot.user.id})")
 
 
-client.run(TOKEN)
+bot.run(TOKEN)
