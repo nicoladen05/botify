@@ -35,13 +35,8 @@ class Misc(commands.Cog):
     async def update_channel(self):
         online, players = get_server_stats()
 
-        # Return if no changes
         if online == self.online and players == self.players:
             return
-
-        # Run this if stats changed
-        self.online = online
-        self.players = players
 
         if online:
             channel_name = f"⛏️ 🟢 Online | 👤 {players}"
@@ -49,6 +44,10 @@ class Misc(commands.Cog):
             channel_name = "⛏️ 🔴 Offline"
 
         await self.channel.edit(name=channel_name)
+
+        if self.channel.name == channel_name:  # Channel name got updated sucessfully
+            self.online = online
+            self.players = players
 
 
 def setup(bot):
