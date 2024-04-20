@@ -8,12 +8,14 @@ load_dotenv()
 TOKEN = os.getenv("BOT_TOKEN")
 
 INTENTS = discord.Intents.default()
+INTENTS.members = True
 
 bot = discord.Bot(intents=INTENTS)
 
 # Commands
 bot.load_extension("commands.essentials")
 bot.load_extension("commands.music")
+bot.load_extension("commands.server-stats")
 
 
 @bot.event
