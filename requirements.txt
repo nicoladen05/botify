@@ -3,3 +3,6 @@ py-cord[voice]
 python-dotenv
 wavelink
 pexpect
+
+# Minecraft Module
+mcstatus
