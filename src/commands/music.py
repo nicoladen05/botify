@@ -1,5 +1,6 @@
 import discord
 import wavelink
+from discord.commands import Option
 from discord.ext import commands
 
 TESTING_GUILDS = ["902614427541590066", "803587371152441345"]
@@ -25,7 +26,7 @@ async def wavelink_connect(bot):
     return pool
 
 
-async def create_player(client, pool, channel):
+async def create_player(client, pool, channel, queue):
     node = pool.get_node()
 
     return wavelink.Player(client=client, channel=channel, nodes=[node])
@@ -39,8 +40,17 @@ class Music(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         self.player = None
+        self.queue = wavelink.Queue()
         self.wavelink_pool = await wavelink_connect(self.bot)
         print("Launched Wavelink!")
+
+    @commands.Cog.listener()
+    async def on_wavelink_track_end(
+        self, payload: wavelink.TrackEndEventPayload
+    ):
+        if self.queue:
+            next_track = self.queue.get()
+            await self.player.play(next_track)
 
     @commands.slash_command(
         name="join",
@@ -55,6 +65,7 @@ class Music(commands.Cog):
             client=self.bot,
             pool=self.wavelink_pool,
             channel=author_voice_channel,
+            queue=self.queue,
         )
 
         if not author_voice:
@@ -86,6 +97,7 @@ class Music(commands.Cog):
                 client=self.bot,
                 pool=self.wavelink_pool,
                 channel=author_voice_channel,
+                queue=self.queue,
             )
 
         if not self.player.connected:
@@ -100,27 +112,113 @@ class Music(commands.Cog):
         print(f"Tracks: {tracks}")
 
         top_track = tracks[0]
+        playlist = top_track.playlist
 
-        track_length_seconds = top_track.length / 1000
-        track_minutes = track_length_seconds // 60
-        track_seconds = track_length_seconds % 60
-        track_length = f"{track_minutes:02.0f}:{track_seconds:02.0f}"
+        if not playlist:
+            track_length_seconds = top_track.length / 1000
+            track_minutes = track_length_seconds // 60
+            track_seconds = track_length_seconds % 60
+            track_length = f"{track_minutes:02.0f}:{track_seconds:02.0f}"
 
-        embed = discord.Embed(
-            title=":play_pause: Playing",
-            description=f"""
-                {top_track.author} - {top_track.title}
-                {track_length}
-            """,
-            color=0x00FF00,
-        )
+            author = top_track.author
+            title = top_track.title
+            secondary_info = track_length
+            artwork = top_track.artwork
 
-        embed.set_thumbnail(url=top_track.artwork)
+            print(f"Queueing: {top_track.title}")
+            self.queue.put(top_track)
+        else:
+            author = playlist.author
+            title = playlist.name
+            secondary_info = (
+                f"{playlist.tracks} track{'s' if playlist.tracks > 1 else ''}"
+            )
+            artwork = playlist.artwork
+
+            self.queue.put(tracks)
+
+        if not self.player.playing:
+            queued_track = self.queue.get()
+            await self.player.play(queued_track)
+
+            embed = discord.Embed(
+                title=f":play_pause: Playing{' playlist' if playlist else ''}",
+                description=f"""
+                    {author} - {title}
+                    {secondary_info}
+                """,
+                color=0x00FF00,
+            )
+
+            embed.set_thumbnail(url=artwork)
+        else:
+            if self.queue.count > 1:
+                skip_argument = " " + str(self.queue.count)
+            else:
+                skip_argument = ""
+
+            embed = discord.Embed(
+                title=":play_pause: Queued",
+                description=f"""
+                    {top_track.author} - {top_track.title}
+                    {track_length}
+                """,
+                color=0x00FF00,
+            )
+
+            embed.set_footer(
+                text=f"Use `/skip{skip_argument}` to play it directly"
+            )
+
+            embed.set_thumbnail(url=top_track.artwork)
 
         await ctx.respond(embed=embed)
 
-        print(f"Playing: {top_track.title}")
-        await self.player.play(top_track)
+    @commands.slash_command(
+        text="skip",
+        description="Skips the current track",
+        guild_ids=TESTING_GUILDS,
+    )
+    async def skip(
+        self,
+        ctx,
+        ammount: Option(
+            int, "The ammount of tracks to skip", required=False, default=1
+        ),
+    ):
+        for i in range(ammount):
+            await self.player.skip()
+
+        embed = discord.Embed(
+            title=":fast_forward: Skipped",
+            description=f"""
+                    Skipped {ammount} track{('s' if ammount > 1 else "")}
+                    """,
+            color=0x00FF00,
+        )
+
+        await ctx.respond(embed=embed)
+
+    @commands.slash_command(
+        text="queue",
+        description="Shows the queue",
+        guild_ids=TESTING_GUILDS,
+    )
+    async def queue(self, ctx):
+        embed = discord.Embed(
+            title=":notes: Queue",
+            color=0x00FF00,
+        )
+
+        if not self.queue:
+            embed.description = "The queue is empty!"
+
+        for song in self.queue:
+            embed.add_field(
+                name=f"**{song.title}**", value=song.author, inline=False
+            )
+
+        await ctx.respond(embed=embed)
 
     @commands.slash_command(
         text="leave",
