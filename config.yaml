@@ -9,7 +9,3 @@ arch:
   - armhf
   - armv7
   - i386
-options:
-  bot_token: "token"
-schema:
-  bot_token: str
