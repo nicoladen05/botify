@@ -1,4 +1,0 @@
-options:
-  bot_token: "token"
-schema:
-  bot_token: str
