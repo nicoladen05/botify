@@ -1,4 +1,4 @@
-py-cord==2.5.0
+py-cord
 py-cord[voice]
 python-dotenv
 wavelink
