@@ -45,7 +45,9 @@ class Misc(commands.Cog):
 
         await self.channel.edit(name=channel_name)
 
-        if self.channel.name == channel_name:  # Channel name got updated sucessfully
+        if (
+            self.channel.name == channel_name
+        ):  # Channel name got updated sucessfully
             self.online = online
             self.players = players
 

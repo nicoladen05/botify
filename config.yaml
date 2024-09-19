@@ -1,0 +1,15 @@
+name: "Botify"
+description: "Discord Bot"
+version: "1.0.0"
+slug: "botify"
+init: false
+arch:
+  - aarch64
+  - amd64
+  - armhf
+  - armv7
+  - i386
+options:
+  bot_token: "token"
+schema:
+  bot_token: str

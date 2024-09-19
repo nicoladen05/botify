@@ -5,9 +5,9 @@ from discord.ext import commands
 
 TESTING_GUILDS = ["902614427541590066", "803587371152441345"]
 
-LAVALINK_HOST = "lavalink4.alfari.id"
+LAVALINK_HOST = "v4.lavalink.rocks"
 LAVALINK_PORT = 443
-LAVALINK_PASSWORD = "catfein"
+LAVALINK_PASSWORD = "horizxon.tech"
 
 WAVELINK_NODES = [
     wavelink.Node(
