@@ -2,6 +2,7 @@ py-cord[voice]
 python-dotenv
 wavelink
 pexpect
+aiohttp==3.9.5
 
 # Minecraft Module
 mcstatus
