@@ -7,7 +7,7 @@ TESTING_GUILDS = ["902614427541590066", "803587371152441345"]
 
 LAVALINK_HOST = "lavalink-v4.huntools-bot.xyz"
 LAVALINK_PORT = 443
-LAVALINK_PASSWORD = "youshallnotpayoushallnotpassss"
+LAVALINK_PASSWORD = "youshallnotpass"
 
 WAVELINK_NODES = [
     wavelink.Node(
