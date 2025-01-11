@@ -5,9 +5,9 @@ from discord.ext import commands
 
 TESTING_GUILDS = ["902614427541590066", "803587371152441345"]
 
-LAVALINK_HOST = "lavalink-v4.huntools-bot.xyz"
+LAVALINK_HOST = "lavalink.alfari.id"
 LAVALINK_PORT = 443
-LAVALINK_PASSWORD = "youshallnotpass"
+LAVALINK_PASSWORD = "catfein"
 
 WAVELINK_NODES = [
     wavelink.Node(
@@ -45,9 +45,7 @@ class Music(commands.Cog):
         print("Launched Wavelink!")
 
     @commands.Cog.listener()
-    async def on_wavelink_track_end(
-        self, payload: wavelink.TrackEndEventPayload
-    ):
+    async def on_wavelink_track_end(self, payload: wavelink.TrackEndEventPayload):
         if self.queue:
             next_track = self.queue.get()
             await self.player.play(next_track)
@@ -166,9 +164,7 @@ class Music(commands.Cog):
                 color=0x00FF00,
             )
 
-            embed.set_footer(
-                text=f"Use `/skip{skip_argument}` to play it directly"
-            )
+            embed.set_footer(text=f"Use `/skip{skip_argument}` to play it directly")
 
             embed.set_thumbnail(url=top_track.artwork)
 
@@ -214,9 +210,7 @@ class Music(commands.Cog):
             embed.description = "The queue is empty!"
 
         for song in self.queue:
-            embed.add_field(
-                name=f"**{song.title}**", value=song.author, inline=False
-            )
+            embed.add_field(name=f"**{song.title}**", value=song.author, inline=False)
 
         await ctx.respond(embed=embed)
 
