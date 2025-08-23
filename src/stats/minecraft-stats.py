@@ -4,7 +4,7 @@ from mcstatus import JavaServer
 STATUS_CHANNEL = 1231197975313911848
 
 # Make sure to include the port
-SERVER_IP = "nerduniverse.duckdns.org:25565"
+SERVER_IP = "mc.nicoladen.dev:25565"
 
 
 def get_server_stats():
@@ -45,9 +45,7 @@ class Misc(commands.Cog):
 
         await self.channel.edit(name=channel_name)
 
-        if (
-            self.channel.name == channel_name
-        ):  # Channel name got updated sucessfully
+        if self.channel.name == channel_name:  # Channel name got updated sucessfully
             self.online = online
             self.players = players
 
