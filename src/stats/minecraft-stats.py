@@ -3,7 +3,8 @@ from mcstatus import JavaServer
 
 STATUS_CHANNEL = 1231197975313911848
 
-SERVER_IP = "mc.nicoladen.dev"
+# Make sure to include the port
+SERVER_IP = "mc.nicoladen.dev:25565"
 
 
 def get_server_stats():
