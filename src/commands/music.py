@@ -16,7 +16,6 @@ WAVELINK_NODES = [
     )
 ]
 
-
 async def wavelink_connect(bot):
     await bot.wait_until_ready()
 

@@ -15,7 +15,7 @@ bot = discord.Bot(intents=INTENTS)
 
 # Commands
 bot.load_extension("commands.essentials")
-bot.load_extension("commands.music")
+# bot.load_extension("commands.music")
 bot.load_extension("stats.server-stats")
 bot.load_extension("stats.minecraft-stats")
 bot.load_extension("tools.default_role")
