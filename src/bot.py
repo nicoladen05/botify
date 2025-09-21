@@ -19,6 +19,7 @@ bot.load_extension("commands.essentials")
 bot.load_extension("stats.server-stats")
 bot.load_extension("stats.minecraft-stats")
 bot.load_extension("tools.default_role")
+bot.load_extension("commands.minecraft-restart")
 
 
 @bot.event

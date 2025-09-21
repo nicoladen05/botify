@@ -3,6 +3,7 @@ python-dotenv
 wavelink
 pexpect
 aiohttp==3.9.5
+requests
 
 # Minecraft Module
 mcstatus
