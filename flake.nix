@@ -9,26 +9,35 @@
   outputs = { self, nixpkgs, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system:
       let
-        pkgs = nixpkgs.legacyPackages.${system};
+        pycordOverlay = final: prev: rec {
+          python313 = prev.python313.override {
+            packageOverrides = pythonFinal: pythonPrev: {
+              pycord = prev.callPackage ./packages/pycord.nix {};
+            };
+          };
+          python313Packages = python313.pkgs;
+        };
+
+        pkgs = import nixpkgs {
+          inherit system;
+          overlays = [ pycordOverlay ];
+        };
+
         pythonEnv = pkgs.python313.withPackages (ps: with ps; [
-          virtualenv
           pip
+          pycord
+          python-dotenv
+          pexpect
+          aiohttp
+          requests
+          mcstatus
         ]);
       in
       {
         devShell = pkgs.mkShell {
           buildInputs = [
             pythonEnv
-            pkgs.ffmpeg
           ];
-          shellHook = ''
-            virtualenv venv
-            source venv/bin/activate
-            pip install -r requirements.txt
-            # Reinstall the actual pycord
-            pip uninstall py-cord -y
-            pip install py-cord
-          '';
         };
       }
     );
