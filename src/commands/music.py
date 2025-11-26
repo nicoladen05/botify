@@ -16,6 +16,7 @@ WAVELINK_NODES = [
     )
 ]
 
+
 async def wavelink_connect(bot):
     await bot.wait_until_ready()
 
@@ -39,7 +40,7 @@ class Music(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         self.player = None
-        self.queue = wavelink.Queue()
+        self._queue = wavelink.Queue()
         self.wavelink_pool = await wavelink_connect(self.bot)
         print("Launched Wavelink!")
 
@@ -187,7 +188,7 @@ class Music(commands.Cog):
         embed = discord.Embed(
             title=":fast_forward: Skipped",
             description=f"""
-                    Skipped {ammount} track{('s' if ammount > 1 else "")}
+                    Skipped {ammount} track{("s" if ammount > 1 else "")}
                     """,
             color=0x00FF00,
         )
