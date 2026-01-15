@@ -11,8 +11,12 @@
       let
         pkgs = nixpkgs.legacyPackages.${system};
         pythonEnv = pkgs.python313.withPackages (ps: with ps; [
-          virtualenv
-          pip
+          discordpy
+          python-dotenv
+          pexpect
+          aiohttp
+          requests
+          mcstatus
         ]);
       in
       {
@@ -21,14 +25,6 @@
             pythonEnv
             pkgs.ffmpeg
           ];
-          shellHook = ''
-            virtualenv venv
-            source venv/bin/activate
-            pip install -r requirements.txt
-            # Reinstall the actual pycord
-            pip uninstall py-cord -y
-            pip install py-cord
-          '';
         };
       }
     );

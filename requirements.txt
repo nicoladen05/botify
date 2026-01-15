@@ -1,4 +1,4 @@
-py-cord[voice]
+discord.py[voice]
 python-dotenv
 wavelink
 pexpect
