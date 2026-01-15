@@ -16,11 +16,12 @@
       system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
+        lavalinkpy = pkgs.python313.pkgs.callPackage ./packages/lavalinkpy.nix { };
         pythonEnv = pkgs.python313.withPackages (
           ps: with ps; [
             discordpy
             python-dotenv
-            pexpect
+            lavalinkpy
             aiohttp
             requests
             mcstatus
@@ -34,6 +35,10 @@
             pythonEnv
             pkgs.ffmpeg
           ];
+        };
+
+        packages = {
+          lavalinkpy = lavalinkpy;
         };
       }
     );
