@@ -1,3 +1,5 @@
+import logging
+
 from discord.ext import commands, tasks
 from mcstatus import JavaServer
 
@@ -17,9 +19,9 @@ def get_server_stats():
     return True, status.players.online
 
 
-class Misc(commands.Cog):
+class MinecraftStatus(commands.Cog):
     def __init__(self, bot):
-        print("[COG] Minecraft Cog loaded!")
+        logging.info("[COG] Minecraft Cog loaded!")
         self.bot = bot
         self.channel = self.bot.get_channel(STATUS_CHANNEL)
         self.players = None
@@ -47,7 +49,3 @@ class Misc(commands.Cog):
         if self.channel.name == channel_name:  # Channel name got updated sucessfully
             self.online = online
             self.players = players
-
-
-def setup(bot):
-    bot.add_cog(Misc(bot))
