@@ -8,7 +8,7 @@ import yt_dlp
 from discord import app_commands
 from discord.ext import commands
 
-ytdl_format_options: yt_dlp._Params = {
+ytdl_format_options = {
     "format": "bestaudio/best",
     "outtmpl": "%(extractor)s-%(id)s-%(title)s.%(ext)s",
     "restrictfilenames": True,
@@ -26,7 +26,7 @@ ffmpeg_options = {
     "options": "-vn",
 }
 
-ytdl = yt_dlp.YoutubeDL(ytdl_format_options)
+ytdl = yt_dlp.YoutubeDL(ytdl_format_options)  # pyright: ignore[reportArgumentType]
 
 
 class YTDLSource(discord.PCMVolumeTransformer):
