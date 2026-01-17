@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from rich.logging import RichHandler
 
 from src.commands.essentials import Essentials
-from src.commands.music import MusicPlayer
+from src.music.music import Music
 from src.stats.minecraft_stats import MinecraftStatus
 from src.stats.server_stats import Stats
 from src.tools.default_role import DefaultRole
@@ -41,7 +41,7 @@ class Bot(commands.Bot):
         await self.add_cog(DefaultRole(self))
         await self.add_cog(Stats(self))
         await self.add_cog(MinecraftStatus(self))
-        await self.add_cog(MusicPlayer(self))
+        await self.add_cog(Music(self))
 
 
 INTENTS = discord.Intents.default()
