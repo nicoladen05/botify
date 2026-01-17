@@ -1,6 +1,6 @@
 discord.py[voice]
 python-dotenv
-wavelink
+yt-dlp
 pexpect
 aiohttp==3.9.5
 requests

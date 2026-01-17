@@ -16,16 +16,15 @@
       system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
-        lavalinkpy = pkgs.python313.pkgs.callPackage ./packages/lavalinkpy.nix { };
         pythonEnv = pkgs.python313.withPackages (
           ps: with ps; [
             discordpy
             python-dotenv
-            lavalinkpy
             aiohttp
             requests
             mcstatus
             rich
+            yt-dlp
           ]
         );
       in
@@ -34,11 +33,8 @@
           buildInputs = [
             pythonEnv
             pkgs.ffmpeg
+            pkgs.basedpyright
           ];
-        };
-
-        packages = {
-          lavalinkpy = lavalinkpy;
         };
       }
     );
