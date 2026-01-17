@@ -2,7 +2,7 @@ discord.py[voice]
 python-dotenv
 yt-dlp
 pexpect
-aiohttp==3.9.5
+aiohttp==3.13.3
 requests
 
 # Minecraft Module
