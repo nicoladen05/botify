@@ -8,6 +8,8 @@ import yt_dlp
 from discord import app_commands
 from discord.ext import commands
 
+INACTIVITY_TIMEOUT = 10 * 60
+
 ytdl_format_options = {
     "format": "bestaudio/best",
     "outtmpl": "%(extractor)s-%(id)s-%(title)s.%(ext)s",
@@ -71,6 +73,7 @@ class Music(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.queues: dict[int, deque[str]] = {}  # Guild ID -> deque of YTDLSource info
+        self.timeout_tasks: dict[int, asyncio.Task] = {}
         logging.info("[COG] Music Cog Loaded!")
 
     def get_queue(self, guild_id):
@@ -154,6 +157,45 @@ class Music(commands.Cog):
 
         return cast(discord.VoiceClient, voice_client)
 
+    async def disconnect_timer(self, guild_id: int, interaction: discord.Interaction):
+        await asyncio.sleep(INACTIVITY_TIMEOUT)  # 10 minutes
+        if guild_id in self.timeout_tasks:
+            del self.timeout_tasks[guild_id]
+
+        guild = self.bot.get_guild(guild_id)
+        if not guild or not guild.voice_client:
+            return
+
+        voice_client = guild.voice_client
+        if isinstance(voice_client, discord.VoiceClient):
+            await voice_client.disconnect(force=True)
+            self.queues.pop(guild_id, None)
+
+            embed = discord.Embed(
+                title=":zzz: Inactivity",
+                description="Left the voice channel due to inactivity.",
+                color=0xFFA500,
+            )
+            # Try to send to the channel where interaction happened, or just log if fails
+            try:
+                if interaction.channel and isinstance(
+                    interaction.channel, discord.abc.Messageable
+                ):
+                    await interaction.channel.send(embed=embed)
+            except Exception:
+                pass
+
+    def start_disconnect_timer(self, guild_id: int, interaction: discord.Interaction):
+        self.stop_disconnect_timer(guild_id)
+        self.timeout_tasks[guild_id] = self.bot.loop.create_task(
+            self.disconnect_timer(guild_id, interaction)
+        )
+
+    def stop_disconnect_timer(self, guild_id: int):
+        if guild_id in self.timeout_tasks:
+            self.timeout_tasks[guild_id].cancel()
+            del self.timeout_tasks[guild_id]
+
     def play_next(self, interaction: discord.Interaction):
         if not interaction.guild:
             return
@@ -167,8 +209,8 @@ class Music(commands.Cog):
                 self.start_playing(interaction, next_url), self.bot.loop
             )
         else:
-            # Queue empty
-            pass
+            # Queue empty, start timer
+            self.start_disconnect_timer(interaction.guild.id, interaction)
 
     async def start_playing(self, interaction: discord.Interaction, search: str):
         if not interaction.guild:
@@ -177,12 +219,10 @@ class Music(commands.Cog):
         if not voice_client:
             return
 
-        try:
-            # Defer if not already deferred/responded (might happen if called from play_next task)
-            # But play_next is background, so we can't interact easily with the original interaction
-            # unless we kept it, but that expires.
-            # Ideally we just play.
+        # Stop timer when playing starts
+        self.stop_disconnect_timer(interaction.guild.id)
 
+        try:
             player = await YTDLSource.from_url(search, loop=self.bot.loop, stream=True)
 
             voice_client.play(player, after=lambda e: self.play_next(interaction))
@@ -203,9 +243,6 @@ class Music(commands.Cog):
             if player.thumbnail:
                 embed.set_thumbnail(url=player.thumbnail)
 
-            # If this is a direct response to a command, send it.
-            # If it's from the queue, we might want to send to text channel.
-            # For simplicity, we try to followup if possible, else send to channel.
             try:
                 await interaction.followup.send(embed=embed)
             except discord.NotFound:
@@ -221,6 +258,14 @@ class Music(commands.Cog):
             ):
                 await interaction.channel.send(f"An error occurred: {e}")
 
+            # Restart timer if failed to play and still connected
+            if (
+                interaction.guild
+                and interaction.guild.voice_client
+                and not voice_client.is_playing()
+            ):
+                self.start_disconnect_timer(interaction.guild.id, interaction)
+
     @app_commands.command(name="join", description="Joins your voice channel")
     async def join(self, interaction: discord.Interaction):
         voice_client = await self.ensure_voice(interaction, should_connect=True)
@@ -231,6 +276,9 @@ class Music(commands.Cog):
                 color=0x00FF00,
             )
             await interaction.response.send_message(embed=embed)
+            # Start timer on join if not playing
+            if not voice_client.is_playing() and interaction.guild:
+                self.start_disconnect_timer(interaction.guild.id, interaction)
 
     @app_commands.command(name="play", description="Plays a song")
     @app_commands.describe(search="The song to search for or URL to play")
@@ -242,14 +290,10 @@ class Music(commands.Cog):
         await interaction.response.defer()
 
         # If already playing, add to queue
-        if voice_client.is_playing():
+        if voice_client.is_playing() or voice_client.is_paused():
             assert interaction.guild
             queue = self.get_queue(interaction.guild.id)
             queue.append(search)  # Store the search term/url
-
-            # We can't easily get metadata without downloading info, which might slow down queueing.
-            # strict requirement asks for streaming.
-            # For better UX, we could fetch info here.
 
             embed = discord.Embed(
                 title=":play_pause: Queued",
@@ -268,7 +312,9 @@ class Music(commands.Cog):
         assert interaction.guild
 
         voice_client = cast(discord.VoiceClient, interaction.guild.voice_client)
-        if not voice_client or not voice_client.is_playing():
+        if not voice_client or not (
+            voice_client.is_playing() or voice_client.is_paused()
+        ):
             embed = discord.Embed(
                 title=":x: Error!",
                 description="Nothing is playing right now.",
@@ -282,6 +328,60 @@ class Music(commands.Cog):
         embed = discord.Embed(
             title=":fast_forward: Skipped",
             description="Skipped the current track.",
+            color=0x00FF00,
+        )
+        await interaction.response.send_message(embed=embed)
+
+    @app_commands.command(name="pause", description="Pauses the current track")
+    async def pause(self, interaction: discord.Interaction):
+        if not await self._check_is_in_guild(interaction):
+            return
+
+        assert interaction.guild
+        voice_client = cast(discord.VoiceClient, interaction.guild.voice_client)
+
+        if not voice_client or not voice_client.is_playing():
+            embed = discord.Embed(
+                title=":x: Error!",
+                description="Nothing is playing right now.",
+                color=0xFF0000,
+            )
+            await interaction.response.send_message(embed=embed)
+            return
+
+        voice_client.pause()
+        self.start_disconnect_timer(interaction.guild.id, interaction)
+
+        embed = discord.Embed(
+            title=":pause_button: Paused",
+            description="Playback paused.",
+            color=0x00FF00,
+        )
+        await interaction.response.send_message(embed=embed)
+
+    @app_commands.command(name="resume", description="Resumes the current track")
+    async def resume(self, interaction: discord.Interaction):
+        if not await self._check_is_in_guild(interaction):
+            return
+
+        assert interaction.guild
+        voice_client = cast(discord.VoiceClient, interaction.guild.voice_client)
+
+        if not voice_client or not voice_client.is_paused():
+            embed = discord.Embed(
+                title=":x: Error!",
+                description="The music is not paused.",
+                color=0xFF0000,
+            )
+            await interaction.response.send_message(embed=embed)
+            return
+
+        voice_client.resume()
+        self.stop_disconnect_timer(interaction.guild.id)
+
+        embed = discord.Embed(
+            title=":play_pause: Resumed",
+            description="Playback resumed.",
             color=0x00FF00,
         )
         await interaction.response.send_message(embed=embed)
@@ -328,6 +428,7 @@ class Music(commands.Cog):
             await interaction.response.send_message(embed=embed)
             return
 
+        self.stop_disconnect_timer(interaction.guild.id)
         queue = self.get_queue(interaction.guild.id)
         queue.clear()
         await voice_client.disconnect(force=True)
