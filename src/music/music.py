@@ -6,6 +6,7 @@ from typing import Any, cast
 import discord
 import yt_dlp
 from discord import app_commands
+from discord.app_commands.models import app_command_option_factory
 from discord.ext import commands
 
 INACTIVITY_TIMEOUT = 10 * 60
@@ -67,7 +68,8 @@ class YTDLSource(discord.PCMVolumeTransformer):
         )
 
 
-class Music(commands.Cog):
+@app_commands.guild_only
+class Music(commands.GroupCog):
     bot: commands.Bot
 
     def __init__(self, bot):
@@ -81,26 +83,9 @@ class Music(commands.Cog):
             self.queues[guild_id] = deque()
         return self.queues[guild_id]
 
-    async def _check_is_in_guild(self, interaction: discord.Interaction) -> bool:
-        if isinstance(interaction.user, discord.Member):
-            return True
-
-        await interaction.response.send_message(
-            embed=discord.Embed(
-                title=":x: Error!",
-                description="This command can only be used in a server.",
-                color=0xFF0000,
-            ),
-            ephemeral=True,
-        )
-        return False
-
     async def ensure_voice(
         self, interaction: discord.Interaction, should_connect: bool = False
     ):
-        if not await self._check_is_in_guild(interaction):
-            return None
-
         assert interaction.guild is not None
         assert isinstance(interaction.user, discord.Member)
 
@@ -306,9 +291,6 @@ class Music(commands.Cog):
 
     @app_commands.command(name="skip", description="Skips the current track")
     async def skip(self, interaction: discord.Interaction):
-        if not await self._check_is_in_guild(interaction):
-            return
-
         assert interaction.guild
 
         voice_client = cast(discord.VoiceClient, interaction.guild.voice_client)
@@ -334,9 +316,6 @@ class Music(commands.Cog):
 
     @app_commands.command(name="pause", description="Pauses the current track")
     async def pause(self, interaction: discord.Interaction):
-        if not await self._check_is_in_guild(interaction):
-            return
-
         assert interaction.guild
         voice_client = cast(discord.VoiceClient, interaction.guild.voice_client)
 
@@ -361,9 +340,6 @@ class Music(commands.Cog):
 
     @app_commands.command(name="resume", description="Resumes the current track")
     async def resume(self, interaction: discord.Interaction):
-        if not await self._check_is_in_guild(interaction):
-            return
-
         assert interaction.guild
         voice_client = cast(discord.VoiceClient, interaction.guild.voice_client)
 
@@ -388,9 +364,6 @@ class Music(commands.Cog):
 
     @app_commands.command(name="queue", description="Shows the queue")
     async def queue(self, interaction: discord.Interaction):
-        if not await self._check_is_in_guild(interaction):
-            return
-
         assert interaction.guild
 
         queue = self.get_queue(interaction.guild.id)
@@ -413,9 +386,6 @@ class Music(commands.Cog):
 
     @app_commands.command(name="leave", description="Leaves the voice channel")
     async def leave(self, interaction: discord.Interaction):
-        if not await self._check_is_in_guild(interaction):
-            return
-
         assert interaction.guild
 
         voice_client = cast(discord.VoiceClient, interaction.guild.voice_client)
