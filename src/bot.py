@@ -9,6 +9,7 @@ from rich.logging import RichHandler
 
 from src.commands.essentials import Essentials
 from src.music.music import Music
+from src.stats.hytale_stats import HytaleStatus
 from src.stats.minecraft_stats import MinecraftStatus
 from src.stats.server_stats import Stats
 from src.tools.default_role import DefaultRole
@@ -42,6 +43,7 @@ class Bot(commands.Bot):
         await self.add_cog(Essentials(self))
         await self.add_cog(DefaultRole(self))
         await self.add_cog(Stats(self))
+        await self.add_cog(HytaleStatus(self))
         await self.add_cog(MinecraftStatus(self))
         await self.add_cog(Music(self))
 
