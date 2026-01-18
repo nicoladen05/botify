@@ -35,6 +35,8 @@ class Bot(commands.Bot):
         assert self.user is not None
         logging.info(f"Logged in as {self.user}")
 
+        await self.change_presence(activity=discord.CustomActivity(name="/help"))
+
     @override
     async def setup_hook(self) -> None:
         await self.add_cog(Essentials(self))

@@ -1,4 +1,5 @@
 import logging
+from ast import Continue
 
 import discord
 from discord.ext import commands
@@ -18,6 +19,44 @@ class Essentials(commands.Cog):
             description=f"The bots latency is {ping}ms",
             color=discord.Color.blue(),
         )
+
+        await interaction.response.send_message(embed=embed)
+
+    @discord.app_commands.command(name="help", description="Get help with the bot")
+    async def help(self, interaction: discord.Interaction):
+        OWNER_ONLY_COMMANDS = ["sync", "copy_global"]
+
+        command_groups = {}
+
+        for command in discord.app_commands.CommandTree.walk_commands(self.bot.tree):
+            if (
+                isinstance(command, discord.app_commands.Group)
+                or command.qualified_name in OWNER_ONLY_COMMANDS
+            ):
+                continue
+
+            # Get parent group name or use "General" for top-level commands
+            parent = (
+                command.parent.qualified_name.title() if command.parent else "General"
+            )
+
+            if parent not in command_groups:
+                command_groups[parent] = []
+
+            # Format command name and description
+            cmd_name = command.qualified_name
+            cmd_desc = command.description or "No description"
+            command_groups[parent].append(f"**/{cmd_name}** - {cmd_desc}")
+
+        embed = discord.Embed(
+            title=":books: Available Commands",
+            color=discord.Color.blue(),
+        )
+
+        for group_name, commands_list in sorted(command_groups.items()):
+            embed.add_field(
+                name=group_name, value="\n".join(commands_list), inline=False
+            )
 
         await interaction.response.send_message(embed=embed)
 
