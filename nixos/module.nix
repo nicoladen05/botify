@@ -74,6 +74,7 @@ in
         Environment = [
           "PYTHONUNBUFFERED=1"
           "PATH=${lib.makeBinPath [ cfg.package.passthru.ffmpeg ]}"
+          "TOKEN_PATH=${cfg.tokenFile}"
         ];
 
         WorkingDirectory = "${cfg.package}/${pkgs.python313.sitePackages}";
@@ -81,7 +82,7 @@ in
 
       # Set BOT_TOKEN environment variable from the credential file and run the bot
       script = ''
-        export BOT_TOKEN=$(cat $CREDENTIALS_DIRECTORY/bot-token)
+        export BOT_TOKEN=$(cat $TOKEN_PATH)
         exec ${cfg.package}/bin/botify
       '';
     };
