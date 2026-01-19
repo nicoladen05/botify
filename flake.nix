@@ -40,6 +40,7 @@
         };
 
         packages = {
+          default = pkgs.python313Packages.callPackage ./pkgs/default.nix { };
           python-a2s = python-a2s;
         };
       }
