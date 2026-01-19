@@ -67,10 +67,6 @@ in
         ProtectSystem = "strict";
         ProtectHome = true;
 
-        # Load the bot token from file
-        LoadCredential = "bot-token:${cfg.tokenFile}";
-
-        # Set environment variables
         Environment = [
           "PYTHONUNBUFFERED=1"
           "PATH=${lib.makeBinPath [ cfg.package.passthru.ffmpeg ]}"
@@ -82,7 +78,7 @@ in
 
       # Set BOT_TOKEN environment variable from the credential file and run the bot
       script = ''
-        BOT_TOKEN=$(cat $TOKEN_PATH) bash ${cfg.package}/bin/botify
+        BOT_TOKEN=$(cat $TOKEN_PATH) ${pkgs.python313}/bin/python ${cfg.package}/bin/botify
       '';
     };
 
