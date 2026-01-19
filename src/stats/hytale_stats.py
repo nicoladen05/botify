@@ -1,32 +1,20 @@
 import logging
-import socket
 
+import a2s
 from discord.ext import commands, tasks
 
 STATUS_CHANNEL = 1462416367364870349
 SERVER_IP = "server.nicoladen.dev"
-SERVER_PORT = 5520
+SERVER_PORT = 5521
 
 
 def get_server_stats():
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.settimeout(2.0)
     try:
-        # Hytale doesn't have a known query protocol yet.
-        # We send a dummy packet. If the port is closed (ICMP Port Unreachable),
-        # we might get a ConnectionRefusedError (depending on OS/networking).
-        # This is a best-effort "is it there" check for UDP.
-        sock.sendto(b"\x00", (SERVER_IP, SERVER_PORT))
-        # We don't expect a reply since we don't know the protocol.
-        # If we didn't get an immediate error, we assume it's "up" or at least filtered.
-        return True, 0
-    except ConnectionRefusedError:
+        info = a2s.info((SERVER_IP, SERVER_PORT))
+        return True, info.player_count
+    except Exception:
+        logging.error(f"Failed to get Hytale server stats")
         return False, 0
-    except Exception as e:
-        logging.warning(f"Error checking Hytale server: {e}")
-        return False, 0
-    finally:
-        sock.close()
 
 
 class HytaleStatus(commands.Cog):
@@ -35,6 +23,7 @@ class HytaleStatus(commands.Cog):
         self.bot = bot
         self.channel = self.bot.get_channel(STATUS_CHANNEL)
         self.online = None
+        self.player_count = None
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -45,9 +34,9 @@ class HytaleStatus(commands.Cog):
 
     @tasks.loop(seconds=60)
     async def update_channel(self):
-        online, _ = get_server_stats()
+        online, player_count = get_server_stats()
 
-        if online == self.online:
+        if online == self.online and player_count == self.player_count:
             return
 
         if self.channel is None:
@@ -56,7 +45,7 @@ class HytaleStatus(commands.Cog):
                 return
 
         if online:
-            channel_name = "🗡️ 🟢 Online"
+            channel_name = f"🗡️ 🟢 Online | 👤 {player_count}"
         else:
             channel_name = "🗡️ 🔴 Offline"
 
