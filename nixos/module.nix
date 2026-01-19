@@ -70,16 +70,17 @@ in
         Environment = [
           "PYTHONUNBUFFERED=1"
           "PATH=${lib.makeBinPath [ cfg.package.passthru.ffmpeg ]}"
-          "TOKEN_PATH=${cfg.tokenFile}"
         ];
+
+        LoadCredential = "token:${cfg.tokenFile}";
+
+        ExecStart = pkgs.writeShellScript "start-botify" ''
+          export BOT_TOKEN=$(cat $CREDENTIALS_DIRECTORY/token)
+          exec ${cfg.package}/bin/botify
+        '';
 
         WorkingDirectory = "${cfg.package}/${pkgs.python313.sitePackages}";
       };
-
-      # Set BOT_TOKEN environment variable from the credential file and run the bot
-      script = ''
-        BOT_TOKEN=$(cat $TOKEN_PATH) ${pkgs.bash}/bin/bash ${cfg.package}/bin/botify
-      '';
     };
 
     users.users = lib.mkIf (cfg.user == "botify") {
