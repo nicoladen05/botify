@@ -12,7 +12,7 @@ SERVER_PORT = 5521
 
 def get_server_stats() -> tuple[bool, int]:
     try:
-        info = a2s.info((SERVER_IP, SERVER_PORT))
+        info = a2s.info((SERVER_IP, SERVER_PORT))  # pyright: ignore[reportCallIssue]
         return True, cast(int, info.player_count)
     except Exception:
         return False, 0
