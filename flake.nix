@@ -36,6 +36,10 @@
             pkgs.basedpyright
           ];
         };
+
+        packages = {
+          python-a2s = pkgs.python313Packages.callPackage ./pkgs/python-a2s.nix { };
+        };
       }
     );
 }
