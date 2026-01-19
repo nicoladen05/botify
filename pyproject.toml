@@ -1,6 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "botify"
 version = "1.0.0"
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "discord.py",
+    "python-dotenv",
+    "aiohttp",
+    "requests",
+    "mcstatus",
+    "python-a2s",
+    "rich",
+    "yt-dlp",
+]
+
+[project.scripts]
+botify = "src.bot:main"

@@ -1,5 +1,4 @@
 import logging
-from ast import Continue
 
 import discord
 from discord.ext import commands

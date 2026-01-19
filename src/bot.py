@@ -48,10 +48,15 @@ class Bot(commands.Bot):
         await self.add_cog(Music(self))
 
 
-INTENTS = discord.Intents.default()
-INTENTS.members = True
-INTENTS.message_content = True
+def main() -> None:
+    INTENTS = discord.Intents.default()
+    INTENTS.members = True
+    INTENTS.message_content = True
 
-bot = Bot(intents=INTENTS)
+    bot = Bot(intents=INTENTS)
 
-bot.run(TOKEN)
+    bot.run(TOKEN)
+
+
+if __name__ == "__main__":
+    main()

@@ -12,7 +12,10 @@
       nixpkgs,
       flake-utils,
     }:
-    flake-utils.lib.eachDefaultSystem (
+    {
+      nixosModules.default = import ./nixos/module.nix;
+    }
+    // flake-utils.lib.eachDefaultSystem (
       system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
@@ -40,7 +43,10 @@
         };
 
         packages = {
-          default = pkgs.python313Packages.callPackage ./pkgs/default.nix { };
+          default = pkgs.python313Packages.callPackage ./pkgs/default.nix {
+            inherit python-a2s;
+            inherit (pkgs) ffmpeg;
+          };
           python-a2s = python-a2s;
         };
       }
