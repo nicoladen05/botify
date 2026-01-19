@@ -49,6 +49,12 @@
           };
           python-a2s = python-a2s;
         };
+
+        checks = {
+          nixos-module = import ./nixos/test.nix {
+            inherit pkgs system self;
+          };
+        };
       }
     );
 }

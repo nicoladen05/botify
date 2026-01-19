@@ -200,6 +200,56 @@ chmod 400 /run/secrets/botify-token
 
 Check if all required dependencies are available. The service will automatically restart after 10 seconds on failure.
 
+## Testing
+
+The module includes automated tests that verify the service works correctly in a NixOS VM.
+
+### Running Tests
+
+Run all tests using nix flake check:
+
+```bash
+nix flake check --print-build-logs
+```
+
+Or use the provided test runner script:
+
+```bash
+./nixos/run-test.sh
+```
+
+### Running Tests Manually
+
+Build the test:
+
+```bash
+nix build .#checks.x86_64-linux.nixos-module
+```
+
+Run the test interactively (opens a VM):
+
+```bash
+nix eval --raw .#checks.x86_64-linux.nixos-module.driverInteractive | sh
+```
+
+### What the Tests Verify
+
+The automated tests check:
+
+- ✓ Botify package builds successfully
+- ✓ NixOS module loads without errors
+- ✓ Service user and group are created
+- ✓ Systemd service unit is properly configured
+- ✓ Service can start (with dummy token)
+- ✓ Security hardening options are applied
+- ✓ FFmpeg is available in the service PATH
+- ✓ Credentials are loaded correctly
+- ✓ Service runs as the correct user/group
+
+### Test Implementation
+
+The test is defined in [test.nix](./test.nix) and creates a minimal NixOS VM with the botify service enabled. It uses a dummy token for testing purposes, so the bot won't actually connect to Discord, but it verifies that all the systemd service configuration is correct.
+
 ## Complete Example
 
 See [example.nix](./example.nix) for a complete configuration example.

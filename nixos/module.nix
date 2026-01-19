@@ -71,11 +71,11 @@ in
           "PYTHONUNBUFFERED=1"
           "PATH=${lib.makeBinPath [ cfg.package.passthru.ffmpeg ]}"
         ];
-
+        #
         LoadCredential = "token:${cfg.tokenFile}";
 
         ExecStart = pkgs.writeShellScript "start-botify" ''
-          export BOT_TOKEN=$(cat $CREDENTIALS_DIRECTORY/token)
+          export BOT_TOKEN=$(${pkgs.coreutils}/bin/cat $CREDENTIALS_DIRECTORY/token)
           exec ${cfg.package}/bin/botify
         '';
 
