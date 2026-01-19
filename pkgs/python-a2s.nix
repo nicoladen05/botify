@@ -22,5 +22,4 @@ buildPythonPackage {
     setuptools
     setuptools-scm
   ];
-
 }
