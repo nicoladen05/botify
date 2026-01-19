@@ -78,7 +78,7 @@ in
 
       # Set BOT_TOKEN environment variable from the credential file and run the bot
       script = ''
-        BOT_TOKEN=$(cat $TOKEN_PATH) bash ${cfg.package}/bin/botify
+        BOT_TOKEN=$(cat $TOKEN_PATH) ${pkgs.bash}/bin/bash ${cfg.package}/bin/botify
       '';
     };
 
