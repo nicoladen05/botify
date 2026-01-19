@@ -13,7 +13,6 @@ def get_server_stats():
         info = a2s.info((SERVER_IP, SERVER_PORT))
         return True, info.player_count
     except Exception:
-        logging.error(f"Failed to get Hytale server stats")
         return False, 0
 
 
