@@ -21,6 +21,10 @@ class JoinMessage(commands.Cog):
         if not (openai_api_key := os.getenv("OPENAI_API_KEY")):
             logging.error("OPENAI_API_KEY environment variable not set")
             await self.bot.remove_cog(self.__class__.__name__)
+<<<<<<< HEAD
+=======
+            return
+>>>>>>> ff580b7 (feat: add ai generated join message)
 
         self.openai_client = OpenAI(api_key=openai_api_key)
 
