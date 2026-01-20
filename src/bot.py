@@ -13,6 +13,7 @@ from src.stats.hytale_stats import HytaleStatus
 from src.stats.minecraft_stats import MinecraftStatus
 from src.stats.server_stats import Stats
 from src.tools.default_role import DefaultRole
+from src.tools.join_message import JoinMessage
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -46,6 +47,7 @@ class Bot(commands.Bot):
         await self.add_cog(HytaleStatus(self))
         await self.add_cog(MinecraftStatus(self))
         await self.add_cog(Music(self))
+        await self.add_cog(JoinMessage(self))
 
 
 def main() -> None:

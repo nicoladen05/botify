@@ -30,6 +30,7 @@
             python-a2s
             rich
             yt-dlp
+            openai
           ]
         );
       in

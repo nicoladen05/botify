@@ -10,6 +10,7 @@
   rich,
   yt-dlp,
   ffmpeg,
+  openai,
   ...
 }:
 
@@ -31,6 +32,7 @@ buildPythonApplication {
     python-a2s
     rich
     yt-dlp
+    openai
   ];
 
   passthru = {
