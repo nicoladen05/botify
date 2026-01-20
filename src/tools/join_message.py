@@ -4,17 +4,19 @@ import os
 import discord
 from discord.ext import commands
 from openai import OpenAI
+from openai.types.chat import ChatCompletionMessageParam
 
 WELCOME_CHANNEL = 832962322967822336
 
 
 class JoinMessage(commands.Cog):
-    openai_client: OpenAI
+    openai_client: OpenAI | None
     bot: commands.Bot
 
     def __init__(self, bot: commands.Bot):
         logging.info("[COG] Join Message Loaded!")
         self.bot = bot
+        self.openai_client = None
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -27,15 +29,55 @@ class JoinMessage(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
-        response = self.openai_client.responses.create(
-            model="gpt-5-mini",
-            instructions="You are a helpful assistant that is welcoming new members to our discord server.",
-            input=f"Generate a short welcome message for the {member.name}. Generate the message in german. Make a funny reference or pun to the users name. You can both be nice or roast them. Answer with the message to send to the channel. Do not include any new-lines. When referencing the users name, use `<@{member.id}>` to tag them.",
-        )
+        try:
+            if not self.openai_client:
+                logging.error("[JOIN_MESSAGE] OpenAI client not initialized")
+                return
 
-        channel = self.bot.get_channel(WELCOME_CHANNEL)
+            messages: list[ChatCompletionMessageParam] = [
+                {
+                    "role": "system",
+                    "content": """# Identity
+You are a friendly Discord welcome bot that generates personalized German welcome messages.
 
-        if channel and isinstance(channel, discord.TextChannel):
-            _ = await channel.send(response.output_text)
-        else:
-            logging.error(f"Welcome channel {WELCOME_CHANNEL} not found")
+# Instructions
+- Generate short, humorous welcome messages in German
+- Make a funny pun or reference to the user's name
+- Be either nice or playfully roast them
+- Use the provided user mention format to tag them
+- Keep messages to 1-2 sentences maximum
+- Do not include newlines in your response
+
+# Examples
+<user_name>Max</user_name>
+<assistant_response>Willkommen <@123456789>! Hoffe du bist nicht so "maximal" wie dein Name klingt! 🎮</assistant_response>
+
+<user_name>Sarah</user_name>
+<assistant_response>Hey <@987654321>! "Sarah" klingt nach "Sahara" - hoffe du bist nicht so trocken! 😄</assistant_response>""",
+                },
+                {
+                    "role": "user",
+                    "content": f"Generate a welcome message for {member.name} using <@{member.id}> to tag them.",
+                },
+            ]
+
+            response = self.openai_client.chat.completions.create(
+                model="gpt-4o-mini", messages=messages, max_tokens=100, temperature=0.8
+            )
+
+            welcome_message = response.choices[0].message.content
+
+            channel = self.bot.get_channel(WELCOME_CHANNEL)
+
+            if channel and isinstance(channel, discord.TextChannel):
+                _ = await channel.send(welcome_message)
+            else:
+                logging.error(f"Welcome channel {WELCOME_CHANNEL} not found")
+
+        except Exception as e:
+            logging.error(f"[JOIN_MESSAGE] Failed to generate welcome message: {e}")
+            fallback_message = f"Willkommen auf dem Server, <@{member.id}>! 🎉"
+
+            channel = self.bot.get_channel(WELCOME_CHANNEL)
+            if channel and isinstance(channel, discord.TextChannel):
+                _ = await channel.send(fallback_message)
