@@ -20,11 +20,8 @@ class JoinMessage(commands.Cog):
     async def on_ready(self):
         if not (openai_api_key := os.getenv("OPENAI_API_KEY")):
             logging.error("OPENAI_API_KEY environment variable not set")
-            await self.bot.remove_cog(self.__class__.__name__)
-<<<<<<< HEAD
-=======
+            _ = await self.bot.remove_cog(self.__class__.__name__)
             return
->>>>>>> ff580b7 (feat: add ai generated join message)
 
         self.openai_client = OpenAI(api_key=openai_api_key)
 
@@ -39,6 +36,6 @@ class JoinMessage(commands.Cog):
         channel = self.bot.get_channel(WELCOME_CHANNEL)
 
         if channel and isinstance(channel, discord.TextChannel):
-            await channel.send(response.output_text)
+            _ = await channel.send(response.output_text)
         else:
             logging.error(f"Welcome channel {WELCOME_CHANNEL} not found")
