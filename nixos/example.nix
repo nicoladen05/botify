@@ -31,6 +31,18 @@
     # Or use a plain file (not recommended for production):
     tokenFile = "/run/secrets/botify-token";
 
+    # Optional: Path to a file containing your OpenAI API key
+    # If not provided, OpenAI features will be disabled
+    #
+    # For agenix users:
+    # openaiTokenFile = config.age.secrets.openai-api-key.path;
+    #
+    # For sops-nix users:
+    # openaiTokenFile = config.sops.secrets.openai-api-key.path;
+    #
+    # Or use a plain file (not recommended for production):
+    # openaiTokenFile = "/run/secrets/openai-api-key";
+
     # Optional: Override the package (defaults to pkgs.botify)
     # package = pkgs.botify;
 
@@ -47,9 +59,18 @@
   #   owner = "botify";
   #   group = "botify";
   # };
+  # age.secrets.openai-api-key = {
+  #   file = ./secrets/openai-api-key.age;
+  #   owner = "botify";
+  #   group = "botify";
+  # };
 
   # Example: Using with sops-nix
   # sops.secrets.botify-token = {
+  #   owner = "botify";
+  #   group = "botify";
+  # };
+  # sops.secrets.openai-api-key = {
   #   owner = "botify";
   #   group = "botify";
   # };

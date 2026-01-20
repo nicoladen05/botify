@@ -21,6 +21,17 @@ in
       example = "/run/secrets/botify-token";
     };
 
+    openaiTokenFile = lib.mkOption {
+      type = lib.types.nullOr lib.types.path;
+      default = null;
+      description = lib.mdDoc ''
+        Path to a file containing the OpenAI API key.
+        This file should contain only the API key string.
+        If not provided, OpenAI features will be disabled.
+      '';
+      example = "/run/secrets/openai-api-key";
+    };
+
     package = lib.mkOption {
       type = lib.types.package;
       default = pkgs.botify or (throw "botify package not found in pkgs");
@@ -72,10 +83,16 @@ in
           "PATH=${lib.makeBinPath [ cfg.package.passthru.ffmpeg ]}"
         ];
         #
-        LoadCredential = "token:${cfg.tokenFile}";
+        LoadCredential = [
+          "token:${cfg.tokenFile}"
+        ]
+        ++ lib.optional (cfg.openaiTokenFile != null) "openai-token:${cfg.openaiTokenFile}";
 
         ExecStart = pkgs.writeShellScript "start-botify" ''
           export BOT_TOKEN=$(${pkgs.coreutils}/bin/cat $CREDENTIALS_DIRECTORY/token)
+          ${lib.optionalString (cfg.openaiTokenFile != null) ''
+            export OPENAI_API_KEY=$(${pkgs.coreutils}/bin/cat $CREDENTIALS_DIRECTORY/openai-token)
+          ''}
           exec ${cfg.package}/bin/botify
         '';
 
