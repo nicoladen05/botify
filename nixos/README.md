@@ -52,6 +52,8 @@ This NixOS module provides a systemd service for running the Botify Discord bot.
   services.botify = {
     enable = true;
     tokenFile = "/run/secrets/botify-token";
+    # Optional: Enable OpenAI features
+    # openaiTokenFile = "/run/secrets/openai-api-key";
   };
 }
 ```
@@ -70,6 +72,14 @@ This NixOS module provides a systemd service for running the Botify Discord bot.
 - **Required:** Yes (when enabled)
 - **Description:** Path to a file containing the Discord bot token. This file should contain only the token string.
 - **Example:** `"/run/secrets/botify-token"`
+
+### `services.botify.openaiTokenFile`
+
+- **Type:** `path` or `null`
+- **Default:** `null`
+- **Required:** No
+- **Description:** Path to a file containing the OpenAI API key. This file should contain only the API key string. If not provided, OpenAI features will be disabled.
+- **Example:** `"/run/secrets/openai-api-key"`
 
 ### `services.botify.package`
 
@@ -101,9 +111,16 @@ This NixOS module provides a systemd service for running the Botify Discord bot.
     group = "botify";
   };
 
+  age.secrets.openai-api-key = {
+    file = ./secrets/openai-api-key.age;
+    owner = "botify";
+    group = "botify";
+  };
+
   services.botify = {
     enable = true;
     tokenFile = config.age.secrets.botify-token.path;
+    openaiTokenFile = config.age.secrets.openai-api-key.path;
   };
 }
 ```
@@ -117,20 +134,30 @@ This NixOS module provides a systemd service for running the Botify Discord bot.
     group = "botify";
   };
 
+  sops.secrets.openai-api-key = {
+    owner = "botify";
+    group = "botify";
+  };
+
   services.botify = {
     enable = true;
     tokenFile = config.sops.secrets.botify-token.path;
+    openaiTokenFile = config.sops.secrets.openai-api-key.path;
   };
 }
 ```
 
 ### Manual Setup (Not Recommended for Production)
 
-Create a file with your Discord bot token:
+Create files with your Discord bot token and OpenAI API key:
 
 ```bash
 echo "your-discord-bot-token-here" > /run/secrets/botify-token
 chmod 600 /run/secrets/botify-token
+
+# Optional: For OpenAI features
+echo "your-openai-api-key-here" > /run/secrets/openai-api-key
+chmod 600 /run/secrets/openai-api-key
 ```
 
 ## Service Management
