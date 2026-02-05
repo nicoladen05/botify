@@ -19,8 +19,9 @@
       system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
-        python-a2s = pkgs.python313Packages.callPackage ./pkgs/python-a2s.nix { };
-        pythonEnv = pkgs.python313.withPackages (
+        python-a2s = pkgs.python314Packages.callPackage ./pkgs/python-a2s.nix { };
+        embar = pkgs.python314Packages.callPackage ./pkgs/embar.nix { };
+        pythonEnv = pkgs.python314.withPackages (
           ps: with ps; [
             discordpy
             python-dotenv
@@ -44,11 +45,11 @@
         };
 
         packages = {
-          default = pkgs.python313Packages.callPackage ./pkgs/default.nix {
+          default = pkgs.python314Packages.callPackage ./pkgs/default.nix {
             inherit python-a2s;
             inherit (pkgs) ffmpeg;
           };
-          python-a2s = python-a2s;
+          inherit python-a2s embar;
         };
 
         checks = {
