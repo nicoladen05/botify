@@ -1,7 +1,7 @@
 aiohttp
+discord.py[voice]
 mcstatus
 openai
-py-cord
 python-a2s
 python-dotenv
 requests
