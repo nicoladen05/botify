@@ -1,0 +1,9 @@
+aiohttp
+mcstatus
+openai
+py-cord
+python-a2s
+python-dotenv
+requests
+rich
+yt-dlp

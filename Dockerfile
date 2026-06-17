@@ -3,9 +3,6 @@ FROM python:3.12.6
 # Install pip requirements
 COPY requirements.txt .
 RUN python3 -m pip install -r requirements.txt
-RUN python3 -m pip uninstall discord.py -y
-RUN python3 -m pip uninstall py-cord -y
-RUN python3 -m pip install py-cord
 
 WORKDIR /app
 COPY . /app
