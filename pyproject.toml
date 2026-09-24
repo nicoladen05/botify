@@ -16,7 +16,7 @@ dependencies = [
     "python-a2s",
     "rich",
     "yt-dlp",
-    "openai",
+    "openrouter>=1.2.22",
 ]
 
 [project.scripts]
